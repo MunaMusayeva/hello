@@ -1,0 +1,254 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+using namespace std;
+
+class Date {
+public:
+    int day;
+    int month;
+    int year;
+
+    Date() {}
+
+    Date(int day, int month, int year)
+        : day(day), month(month), year(year) {}
+
+    void showDate() const {
+        cout << "Day: " << day << endl;
+        cout << "Month: " << month << endl;
+        cout << "Year: " << year << endl;
+    }
+    void inputDate() {
+        cout << "Enter day: ";
+        cin >> day;
+        cout << "Enter month: ";
+        cin >> month;
+        cout << "Enter year: ";
+        cin >> year;
+    }
+};
+
+class Customer {
+public:
+    int id;
+    string name;
+    string surname;
+    Date dateOfBirth;
+
+    Customer(int id, const string& name, const string& surname, const Date& dateOfBirth)
+        : id(id), name(name), surname(surname), dateOfBirth(dateOfBirth) {}
+
+    void showCustomer() const {
+        cout << "Id: " << id << endl;
+        cout << "Name: " << name << endl;
+        cout << "Surname: " << surname << endl;
+        cout << "Date of Birth:" << endl;
+        dateOfBirth.showDate();
+    }
+    void inputCustomerDetails() {
+        cout << "Enter customer ID: ";
+        cin >> id;
+        cout << "Enter customer name: ";
+        cin.ignore();
+        getline(cin, name);
+        cout << "Enter customer surname: ";
+        getline(cin, surname);
+        cout << "Enter customer date of birth:" << endl;
+        dateOfBirth.inputDate();
+    }
+    void saveCustomerToFile(const string& filename) const {
+        ofstream outFile(filename);
+        if (outFile.is_open()) {
+            outFile << "Customer ID: " << id << endl;
+            outFile << "Name: " << name << endl;
+            outFile << "Surname: " << surname << endl;
+            outFile << "Date of Birth: " << dateOfBirth.day << "/" << dateOfBirth.month << "/" << dateOfBirth.year << endl;
+            outFile.close();
+            cout << "Customer information saved to file: " << filename << endl;
+        }
+        else {
+            cout << "Unable to open file: " << filename << endl;
+        }
+    }
+};
+
+class Product {
+public:
+    int id;
+    string name;
+    double price;
+    string color;
+
+    Product(int id, const string& name, double price, const string& color)
+        : id(id), name(name), price(price), color(color) {}
+
+    void showProduct() const {
+        cout << "Id: " << id << endl;
+        cout << "Name: " << name << endl;
+        cout << "Price: " << price << endl;
+        cout << "Color: " << color << endl;
+    }
+    void inputProductDetails() {
+        cout << "Enter product ID: ";
+        cin >> id;
+        cout << "Enter product name: ";
+        cin.ignore();
+        getline(cin, name);
+        cout << "Enter product color: ";
+        getline(cin, color);
+        cout << "Enter product price: ";
+        cin >> price;
+    }
+
+};
+
+class ProductItem {
+public:
+    int id;
+    Product product;
+    int quantity;
+
+    ProductItem(int id, const Product& product, int quantity)
+        : id(id), product(product), quantity(quantity) {}
+
+    void showProductItem() const {
+        cout << "Id: " << id << endl;
+        product.showProduct();
+        cout << "Quantity: " << quantity << endl;
+    }
+
+    double TotalPrice() const {
+        return product.price * quantity;
+    }
+};
+
+class Order {
+public:
+    vector<ProductItem> productItems;
+    int customerId;
+    Date datetime;
+
+    Order(int customerId, const Date& datetime)
+        : customerId(customerId), datetime(datetime) {}
+
+    void addProductItem(const ProductItem& item) {
+        productItems.push_back(item);
+    }
+
+    void showOrder() const {
+        cout << "Order Details:" << endl;
+        cout << "Customer ID: " << customerId << endl;
+        cout << "Order Date:" << endl;
+        datetime.showDate();
+        cout << "Products:" << endl;
+        double totalPrice = 0.0;
+        for (const auto& item : productItems) {
+            item.showProductItem();
+            totalPrice += item.TotalPrice(); 
+        }
+        cout << "Total Price: " << totalPrice << endl;
+    }
+    void inputOrderDetails() {
+        cout << "Enter customer ID for the order: ";
+        cin >> customerId;
+        cout << "Enter order date:" << endl;
+        datetime.inputDate();
+    }
+    void saveOrderToFile(const string& filename) const {
+        ofstream outFile(filename);
+        if (outFile.is_open()) {
+            outFile << "Order Details:" << endl;
+            outFile << "Customer ID: " << customerId << endl;
+            outFile << "Order Date: " << datetime.day << "/" << datetime.month << "/" << datetime.year << endl;
+            outFile << "Products:" << endl;
+            double totalPrice = 0.0;
+            for (const auto& item : productItems) {
+                outFile << "Product ID: " << item.product.id << endl;
+                outFile << "Name: " << item.product.name << endl;
+                outFile << "Price: " << item.product.price << endl;
+                outFile << "Color: " << item.product.color << endl;
+                outFile << "Quantity: " << item.quantity << endl;
+                outFile << "Total Price: " << item.TotalPrice() << endl;
+                totalPrice += item.TotalPrice();
+            }
+            outFile << "Total Price: " << totalPrice << endl;
+            outFile.close();
+            cout << "Order information saved to file: " << filename << endl;
+        }
+        else {
+            cout << "Unable to open file: " << filename << endl;
+        }
+    }
+};
+
+void main() {
+    try {
+        Customer customer(0, "", "", Date(0, 0, 0));
+        Product p1(1, "Pen", 1.10, "Qirmizi");
+        Product p2(2, "Cup", 5.20, "Mavi");
+        Product p3(3, "Watch", 15, "Qara");
+        customer.inputCustomerDetails();
+
+        bool continueShopping = true;
+        Order order(customer.id, Date(0, 0, 0));
+
+        while (continueShopping) {
+            cout << "1.Pen - 1.10AZN\n2.Cup - 5.20AZN\n3.Watch - 15AZN" << endl;
+            int secim;
+            cout << "Seciminizi daxil edin (0 to exit): ";
+            cin >> secim;
+            switch (secim) {
+            case 0:
+                continueShopping = false;
+                break;
+            case 1: {
+                int quantity;
+                cout << "Enter quantity for Pen: ";
+                cin >> quantity;
+                if (quantity <= 0) {
+                    throw invalid_argument("Quantity must be a positive integer.");
+                }
+                ProductItem penItem(1, p1, quantity);
+                order.addProductItem(penItem);
+                break;
+            }
+            case 2: {
+                int quantity;
+                cout << "Enter quantity for Cup: ";
+                cin >> quantity;
+                if (quantity <= 0) {
+                    throw invalid_argument("Quantity must be a positive integer.");
+                }
+                ProductItem cupItem(2, p2, quantity);
+                order.addProductItem(cupItem);
+                break;
+            }
+            case 3: {
+                int quantity;
+                cout << "Enter quantity for Watch: ";
+                cin >> quantity;
+                if (quantity <= 0) {
+                    throw invalid_argument("Quantity must be a positive integer.");
+                }
+                ProductItem watchItem(3, p3, quantity);
+                order.addProductItem(watchItem);
+                break;
+            }
+            default:
+                cout << "Invalid choice!" << endl;
+            }
+        }
+        order.inputOrderDetails();
+        order.showOrder();
+        customer.saveCustomerToFile("customer_info.txt");
+        order.saveOrderToFile("order_info.txt");
+    }
+    catch (const exception& ex) {
+        cout << "Exception occurred: " << ex.what() << endl;
+    }
+
+      
+    
+}
